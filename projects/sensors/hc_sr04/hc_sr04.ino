@@ -8,27 +8,26 @@ void setup() {
 }
 
 void loop() {
+  // 直前にノイズなどでHIGHになっていた場合の修正
   digitalWrite(TRIG_PIN, LOW);
   delayMicroseconds(2);
+
+  // 10µ秒以上のHIGH信号を受け取ると、超音波を発射する
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
 
-  // Measure the duration of the echo pulse
-  // Timeout: 30ms (approx 5m range)
-  // Distance = Duration * 0.034 / 2
-  // Max distance 500cm.
+  // ECHOピンがHIGHになるまで待つ
   long duration = pulseIn(ECHO_PIN, HIGH, 30000);
 
-  if (duration == 0) {
-    // Timeout or out of range (pulseIn returns 0 on timeout)
+  if (duration == 0) { // 距離が0の場合
     Serial.println("-1");
   } else {
-    float distance = (duration * 0.034) / 2;
-    if (distance > 500) {
+    float distance = (duration * 0.034) / 2; // 距離を計算
+    if (distance > 500) { // 距離が500cmを超えた場合
       Serial.println("-1");
     } else {
-      Serial.println(distance);
+      Serial.println(distance); // 距離を出力
     }
   }
 
