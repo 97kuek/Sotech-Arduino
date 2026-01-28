@@ -1,4 +1,4 @@
-# Sotech Arduino Projects
+# Arduino
 
 Sotechコースで作成したArduinoプロジェクトと学習資料です。
 
@@ -15,6 +15,7 @@ Sotechコースで作成したArduinoプロジェクトと学習資料です。
 - **gpio_input**: スイッチ入力などの基本操作
 - **analog_input**: 可変抵抗などを使用したアナログ入力
 - **actuators**: サーボモーターやDCモーターの制御
+- **sensors**: 温度センサーや距離センサー（HC-SR04など）
 - **displays**: LCDなどの表示デバイス
 
 ## 環境
