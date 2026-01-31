@@ -5,7 +5,9 @@ const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 // 信号判定パラメータ (環境に合わせて調整が必要)
+// 信号判定パラメータ (環境に合わせて調整が必要)
 const int LIGHT_THRESHOLD = 500;                 // この値を超えたらONとみなす
+const int CLEAR_BUTTON_PIN = 8;                  // クリアボタンのピン番号
 
 // 時間パラメータ
 const unsigned long DOT_DURATION_MAX = 600;      // これ以下なら短点(.)
@@ -17,6 +19,7 @@ bool isLightOn = false;                          // 光センサーのON/OFF状�
 unsigned long lastChangeTime = 0;                // 最後の状態変化時刻
 String currentSymbol = "";                       // 受信中のモールス符号 (例: ".-")
 String decodedMessage = "";                      // 受信済みメッセージ
+unsigned long lastDebugUpdateTime = 0;           // デバッグ表示更新用タイマー
 
 struct MorseMapping {
   const char* code;
@@ -42,6 +45,7 @@ void updateDisplay();
 void setup() {
   Serial.begin(9600);
   pinMode(SENSOR_PIN, INPUT);                    // 光センサーを入力ピンにする
+  pinMode(CLEAR_BUTTON_PIN, INPUT_PULLUP);       // クリアボタンを入力ピンにする(内部プルアップ)
   lcd.begin(16, 2);                              // LCDを初期化
   lcd.print("Morse Receiver");
   lcd.setCursor(0, 1);                           // 2行目
@@ -102,6 +106,31 @@ void loop() {
     }
   }
   
+  // --- クリア機能 ---
+  // ボタン押下 (LOW) または シリアルから 'c' 受信でクリア
+  if (digitalRead(CLEAR_BUTTON_PIN) == LOW || (Serial.available() > 0 && (Serial.peek() == 'c' || Serial.peek() == 'C'))) {
+    // シリアルバッファを空にする
+    while (Serial.available() > 0) Serial.read();
+
+    decodedMessage = "";
+    currentSymbol = "";
+    isLightOn = false; // 状態もリセット
+    lcd.clear();
+    updateDisplay();
+    delay(500); // チャタリング防止 / 連続クリア防止
+  }
+
+  // --- デバッグ用: センサー値を定期的に更新 ---
+  if (millis() - lastDebugUpdateTime > 200) {
+    lcd.setCursor(12, 0);
+    int val = analogRead(SENSOR_PIN);
+    lcd.print(val);
+    if(val < 1000) lcd.print(" ");
+    if(val < 100) lcd.print(" ");
+    if(val < 10) lcd.print(" ");
+    lastDebugUpdateTime = millis();
+  }
+
   delay(10);
 }
 
